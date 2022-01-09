@@ -9,6 +9,7 @@ import Foundation
 
 class Game: ObservableObject {
     var board: [[Dice]]
+    var changeList = [Dice]() // contains dice that are waiting to change
 
     private let numRows: Int
     private let numCols: Int
@@ -48,6 +49,7 @@ class Game: ObservableObject {
         }
     }
 
+    // MARK: - Neighbor helper methods
     private func countNeighbors(row: Int, col: Int) -> Int {
         var result = 0
 
@@ -58,5 +60,37 @@ class Game: ObservableObject {
         if row < numRows - 1    { result += 1 } // below
 
         return result
+    }
+
+    private func getNeighbors(row: Int, col: Int) -> [Dice] {
+        var result = [Dice]()
+
+        // Check each side for a neighbor
+        if col > 0              { result.append(board[row][col - 1]) }  // left
+        if col < numCols - 1    { result.append(board[row][col + 1]) } // right
+        if row > 0              { result.append(board[row - 1][col]) } // above
+        if row < numRows - 1    { result.append(board[row + 1][col]) } // below
+
+        return result
+    }
+
+    // MARK: - Game methods
+    private func bump(_ dice: Dice) {
+        // 1. Increase the value of the dice by 1
+        dice.value += 1
+
+        // 2. The current player becomes its owner
+        dice.owner = activePlayer
+
+        // 3. Split if necessary
+        if dice.value > dice.neighbors {
+            // reset value
+            dice.value = 1
+
+            // Add neighbors to changeList to bump them
+            for neighbor in getNeighbors(row: dice.row, col: dice.col) {
+                changeList.append(neighbor)
+            }
+        }
     }
 }
