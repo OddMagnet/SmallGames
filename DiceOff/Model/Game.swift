@@ -93,4 +93,41 @@ class Game: ObservableObject {
             }
         }
     }
+
+    private func runChanges() {
+        guard changeList.isEmpty == false else {
+            nextTurn()
+            return
+        }
+
+        let toChange = changeList
+        changeList.removeAll()
+
+        for dice in toChange {
+            bump(dice)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.runChanges()
+        }
+    }
+
+    private func nextTurn() {
+        if activePlayer == .green {
+            activePlayer = .red
+        } else {
+            activePlayer = .green
+        }
+
+        state = .waiting
+    }
+
+    func increment(_ dice: Dice) {
+        guard state == .waiting else { return }
+        guard dice.owner == .none || dice.owner == activePlayer else { return }
+
+        state = .changing
+        changeList.append(dice)
+        runChanges()
+    }
 }

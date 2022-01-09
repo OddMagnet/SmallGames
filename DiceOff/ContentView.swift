@@ -29,6 +29,9 @@ struct ContentView: View {
                 HStack(spacing: 5) {                            // create an HStack for the row
                     ForEach(game.board[row]) { dice in          // go over every dice in the row
                         DiceView(dice: dice)                    // create a DiceView for the dice
+                            .onTapGesture {
+                                game.increment(dice)
+                            }
                     }
                 }
             }
