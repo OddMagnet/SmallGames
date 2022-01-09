@@ -15,6 +15,7 @@
 		4C3E8618278ADBDE0037925B /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E8617278ADBDE0037925B /* Player.swift */; };
 		4C3E861A278ADC670037925B /* Dice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E8619278ADC670037925B /* Dice.swift */; };
 		4C3E861C278ADDAC0037925B /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E861B278ADDAB0037925B /* Game.swift */; };
+		4C3E861F278AE0880037925B /* DiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E861E278AE0880037925B /* DiceView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		4C3E8617278ADBDE0037925B /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		4C3E8619278ADC670037925B /* Dice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dice.swift; sourceTree = "<group>"; };
 		4C3E861B278ADDAB0037925B /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		4C3E861E278AE0880037925B /* DiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			children = (
 				4C3E8606278ADAF10037925B /* DiceOffApp.swift */,
 				4C3E8608278ADAF10037925B /* ContentView.swift */,
+				4C3E861D278AE0750037925B /* Views */,
 				4C3E8614278ADB870037925B /* Model */,
 				4C3E860A278ADAF30037925B /* Assets.xcassets */,
 				4C3E860C278ADAF30037925B /* Preview Content */,
@@ -85,6 +88,14 @@
 				4C3E861B278ADDAB0037925B /* Game.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		4C3E861D278AE0750037925B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				4C3E861E278AE0880037925B /* DiceView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -162,6 +173,7 @@
 				4C3E8616278ADBAB0037925B /* GameState.swift in Sources */,
 				4C3E861A278ADC670037925B /* Dice.swift in Sources */,
 				4C3E8609278ADAF10037925B /* ContentView.swift in Sources */,
+				4C3E861F278AE0880037925B /* DiceView.swift in Sources */,
 				4C3E8607278ADAF10037925B /* DiceOffApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
