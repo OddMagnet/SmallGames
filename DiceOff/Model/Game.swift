@@ -5,7 +5,7 @@
 //  Created by Michael Brünen on 09.01.22.
 //
 
-import Foundation
+import SwiftUI
 
 class Game: ObservableObject {
     var board: [[Dice]]
@@ -81,6 +81,12 @@ class Game: ObservableObject {
 
         // 2. The current player becomes its owner
         dice.owner = activePlayer
+
+        // ensure the player can see the change by flashing the current dice
+        dice.changeAmount = 1
+        withAnimation {
+            dice.changeAmount = 0
+        }
 
         // 3. Split if necessary
         if dice.value > dice.neighbors {
