@@ -75,6 +75,22 @@ class Game: ObservableObject {
     }
 
     // MARK: - Game methods
+    /// Returns a tuple of scores
+    /// - Returns: The tuple of scores, as `(.green, .red)`
+    private func scores() -> (Int, Int) {
+        var green = 0
+        var red = 0
+
+        for row in board {
+            for col in row {
+                if col.owner == .green { green += 1 }
+                if col.owner == .red { red += 1 }
+            }
+        }
+
+        return (green, red)
+    }
+
     private func bump(_ dice: Dice) {
         // 1. Increase the value of the dice by 1
         dice.value += 1
@@ -101,18 +117,25 @@ class Game: ObservableObject {
     }
 
     private func runChanges() {
+        // ensure there are changes to be made
         guard changeList.isEmpty == false else {
             nextTurn()
             return
         }
 
+        // make a copy of the changeList, then empty it
         let toChange = changeList
         changeList.removeAll()
 
+        // bump every dice in the list
         for dice in toChange {
             bump(dice)
         }
 
+        // update the scores
+        (greenScore, redScore) = scores()
+
+        // recall this method with a small delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.runChanges()
         }
