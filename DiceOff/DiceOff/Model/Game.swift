@@ -20,6 +20,8 @@ class Game: ObservableObject {
     @Published var greenScore = 0
     @Published var redScore = 0
 
+    private var aiClosedList = [Dice]()
+
     init(rows: Int, columns: Int) {
         numRows = rows
         numCols = columns
@@ -144,11 +146,17 @@ class Game: ObservableObject {
     private func nextTurn() {
         if activePlayer == .green {
             activePlayer = .red
+            state = .thinking
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.executeAITurn()
+            }
         } else {
             activePlayer = .green
+            state = .waiting
         }
 
-        state = .waiting
+//        state = .waiting
     }
 
     func increment(_ dice: Dice) {
@@ -158,5 +166,139 @@ class Game: ObservableObject {
         state = .changing
         changeList.append(dice)
         runChanges()
+    }
+
+    // MARK: - AI methods
+    /// Recursively adds all dies that would be affected by a move to a list
+    /// - Parameter dice: The dice that is being checked
+    private func checkMove(for dice: Dice) {
+        // ensure the dice that is being checked wasn't checked already
+        guard aiClosedList.contains(dice) == false else { return }
+        // make sure it won't be checked in future recursive calls
+        aiClosedList.append(dice)
+
+        // check if it would cause a split
+        if dice.value + 1 > dice.neighbors {
+            for neighbor in getNeighbors(row: dice.row, col: dice.col) {
+                checkMove(for: neighbor)
+            }
+        }
+    }
+
+    private func getBestMove() -> Dice? {
+        // set up some variables
+        let aiPlayer = Player.red   // to track the ai player
+        var bestDice = [Dice]()     // what are the best dice to select
+        var bestScore = -9999       // how good a move they are
+
+        // check all dices
+        for row in board {
+            for dice in row {
+                // only check possible dice
+                if dice.owner == .none || dice.owner == aiPlayer {
+
+                    // reset the list, then check the move on the dice
+                    aiClosedList.removeAll()
+                    checkMove(for: dice)
+
+                    // get the score for the move
+                    let baseScore = checkBaseDiceScore(for: aiPlayer)
+                    let totalMoveScore = checkNeighborDiceScore(for: aiPlayer, with: dice, baseScore: baseScore)
+
+                    // set new best score if needed
+                    if totalMoveScore > bestScore {
+                    // if it beats the current score
+                        bestScore = totalMoveScore
+                        bestDice.removeAll()
+                        bestDice.append(dice)
+                    } else if totalMoveScore == bestScore {
+                    // if it matches the current sore
+                        bestDice.append(dice)
+                    }
+
+                } else {
+                // can't act on the players dice
+                    continue
+                }
+            }
+        }
+
+        // return a move
+        // no move possible
+        if bestDice.isEmpty {
+            return nil
+        }
+        // 50/50 chance to either fortify or make a random move
+        if Bool.random() {
+            // to fortify, select the dice with the highest value
+            var highestValue = 0
+            var selection = [Dice]()
+
+            for dice in bestDice {
+                if dice.value > highestValue {
+                    highestValue = dice.value
+                    selection.removeAll()
+                    selection.append(dice)
+                } else if dice.value == highestValue {
+                    selection.append(dice)
+                }
+            }
+
+            return selection.randomElement()
+
+        } else {
+            // otherwise just take a random one
+            return bestDice.randomElement()
+        }
+    }
+
+    private func checkBaseDiceScore(for player: Player) -> Int {
+        var score = 0
+
+        // increasing a dice is worth less than "capturing" a dice
+        // from the other player
+        for checkDice in aiClosedList {
+            if checkDice.owner == .none || checkDice.owner == player {
+                score += 1
+            } else {
+                score += 10
+            }
+        }
+
+        return score
+    }
+
+    private func checkNeighborDiceScore(for player: Player, with dice: Dice, baseScore: Int) -> Int {
+        var score = baseScore
+
+        // then check if the other player has a higher scoring dice
+        // next to the current dice, that lowers the moves score
+        // if the dice is equal or lower, then it adds to the score
+        let neighborList = getNeighbors(row: dice.row, col: dice.col)
+        for neighborDice in neighborList {
+            if neighborDice.owner == player { continue }
+
+            if neighborDice.value > dice.value {
+                score -= 50
+            } else {
+                if neighborDice.owner != .none {
+                    // dice is next to opponents dice with lower value
+                    score += 10
+                }
+            }
+        }
+
+        return score
+    }
+
+    private func executeAITurn() {
+        if let dice = getBestMove() {
+            changeList.append(dice)
+            state = .changing
+            runChanges()
+        } else {
+            // TODO: actually handle this scenario
+            print("No moves left!")
+        }
     }
 }
