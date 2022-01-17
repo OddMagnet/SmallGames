@@ -9,25 +9,34 @@ import SwiftUI
 
 class Game: ObservableObject {
     var board: [[Dice]]
-    var changeList = [Dice]() // contains dice that are waiting to change
+    var changeList = [Dice]()   // contains dice that are waiting to change
+    var gameOver = false        // used to ensure
+    var gameOverScore: Int
 
     private let numRows: Int
     private let numCols: Int
 
-    @Published var activePlayer: Player = .green
+    @Published var players: [Player]
+    @Published var activePlayer: Player
     @Published var state: GameState = .waiting
-
-    @Published var greenScore = 0
-    @Published var redScore = 0
 
     private var aiClosedList = [Dice]()
 
-    init(rows: Int, columns: Int) {
+    init(rows: Int, columns: Int, players: [Player]) {
         numRows = rows
         numCols = columns
+        gameOverScore = numRows * numCols
+
+        self.players = players
 
         // Create an empty board
         self.board = [[Dice]]()
+
+        // ensure the `players` array is not empty
+        guard let firstPlayer = players.shuffled().first else { fatalError("The Game can't be initialised with an empty Players array") }
+
+        // set the active player
+        activePlayer = firstPlayer
 
         // for every row of the board
         for currentRow in 0 ..< numRows {
@@ -49,6 +58,18 @@ class Game: ObservableObject {
             // append the new row
             self.board.append(newRow)
         }
+    }
+
+    // MARK: - Player helper methods
+    func nextPlayer() -> Player {
+        // ensure the players array is not empty
+        guard let currentIndex = players.firstIndex(of: activePlayer) else { fatalError("Players array empty") }
+
+        // for the next players index, check that the current index isn't the last, if it is reset it to 0, otherwise just increase by 1
+        let nextPlayerIndex = currentIndex >= (players.count - 1) ? 0 : currentIndex + 1
+
+        // return the player at the next index
+        return players[nextPlayerIndex]
     }
 
     // MARK: - Neighbor helper methods
@@ -77,20 +98,67 @@ class Game: ObservableObject {
     }
 
     // MARK: - Game methods
-    /// Returns a tuple of scores
-    /// - Returns: The tuple of scores, as `(.green, .red)`
-    private func scores() -> (Int, Int) {
-        var green = 0
-        var red = 0
+    /// Checks and increases the scores for the players
+    private func updateScores() {
+        for player in players {
+            player.score = 0
+        }
 
         for row in board {
             for col in row {
-                if col.owner == .green { green += 1 }
-                if col.owner == .red { red += 1 }
+                guard let color = col.owner?.color else { continue }
+
+                for player in players {
+                    if color == player.color { player.score += 1 }
+                }
             }
         }
+    }
 
-        return (green, red)
+    func increment(_ dice: Dice) {
+        guard state == .waiting else { return }
+        guard dice.owner == nil || dice.owner == activePlayer else { return }
+
+        state = .changing
+        changeList.append(dice)
+        runChanges()
+
+//        if gameOver {
+//            updateScores()
+//        }
+        // TODO: is this change needed?
+        //        state = .waiting
+    }
+
+    private func runChanges() {
+        // ensure there are changes to be made
+        guard changeList.isEmpty == false else {
+            nextTurn()
+            return
+        }
+
+        // update the scores
+        updateScores()
+
+        // check if the game is over
+        if activePlayer.score == gameOverScore {
+            gameOver = true
+            print("GAME OVER")
+        }
+
+        // make a copy of the changeList, then empty it
+        let toChange = changeList
+        changeList.removeAll()
+
+        // bump every dice in the list
+        for dice in toChange {
+            bump(dice)
+        }
+
+        // recall this method with a small delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.runChanges()
+        }
     }
 
     private func bump(_ dice: Dice) {
@@ -118,76 +186,35 @@ class Game: ObservableObject {
         }
     }
 
-    private func runChanges() {
-        // ensure there are changes to be made
-        guard changeList.isEmpty == false else {
-            nextTurn()
-            return
-        }
-
-        // make a copy of the changeList, then empty it
-        let toChange = changeList
-        changeList.removeAll()
-
-        // bump every dice in the list
-        for dice in toChange {
-            bump(dice)
-        }
-
-        // update the scores
-        (greenScore, redScore) = scores()
-
-        // recall this method with a small delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.runChanges()
-        }
-    }
-
     private func nextTurn() {
-        if activePlayer == .green {
-            activePlayer = .red
+        activePlayer = nextPlayer()
+
+        if activePlayer.isAI {
             state = .thinking
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.executeAITurn()
             }
-        } else {
-            activePlayer = .green
-            state = .waiting
         }
 
-//        state = .waiting
-    }
-
-    func increment(_ dice: Dice) {
-        guard state == .waiting else { return }
-        guard dice.owner == .none || dice.owner == activePlayer else { return }
-
-        state = .changing
-        changeList.append(dice)
-        runChanges()
+        state = .waiting
     }
 
     // MARK: - AI methods
-    /// Recursively adds all dies that would be affected by a move to a list
-    /// - Parameter dice: The dice that is being checked
-    private func checkMove(for dice: Dice) {
-        // ensure the dice that is being checked wasn't checked already
-        guard aiClosedList.contains(dice) == false else { return }
-        // make sure it won't be checked in future recursive calls
-        aiClosedList.append(dice)
-
-        // check if it would cause a split
-        if dice.value + 1 > dice.neighbors {
-            for neighbor in getNeighbors(row: dice.row, col: dice.col) {
-                checkMove(for: neighbor)
-            }
+    private func executeAITurn() {
+        if let dice = getBestMove() {
+            changeList.append(dice)
+            state = .changing
+            runChanges()
+        } else {
+            // TODO: actually handle this scenario (Player won)
+            print("No moves left!")
         }
     }
 
     private func getBestMove() -> Dice? {
         // set up some variables
-        let aiPlayer = Player.red   // to track the ai player
+        let aiPlayer = activePlayer // to track the ai player
         var bestDice = [Dice]()     // what are the best dice to select
         var bestScore = -9999       // how good a move they are
 
@@ -252,6 +279,22 @@ class Game: ObservableObject {
         }
     }
 
+    /// Recursively adds all dies that would be affected by a move to a list
+    /// - Parameter dice: The dice that is being checked
+    private func checkMove(for dice: Dice) {
+        // ensure the dice that is being checked wasn't checked already
+        guard aiClosedList.contains(dice) == false else { return }
+        // make sure it won't be checked in future recursive calls
+        aiClosedList.append(dice)
+
+        // check if it would cause a split
+        if dice.value + 1 > dice.neighbors {
+            for neighbor in getNeighbors(row: dice.row, col: dice.col) {
+                checkMove(for: neighbor)
+            }
+        }
+    }
+
     private func checkBaseDiceScore(for player: Player) -> Int {
         var score = 0
 
@@ -289,16 +332,5 @@ class Game: ObservableObject {
         }
 
         return score
-    }
-
-    private func executeAITurn() {
-        if let dice = getBestMove() {
-            changeList.append(dice)
-            state = .changing
-            runChanges()
-        } else {
-            // TODO: actually handle this scenario
-            print("No moves left!")
-        }
     }
 }

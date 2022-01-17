@@ -16,7 +16,7 @@ class Dice: Equatable, Identifiable, ObservableObject {
     // - its number of neighbors
     @Published var value = 1
     @Published var changeAmount = 0.0
-    var owner = Player.none
+    var owner: Player? = nil
     let row: Int
     let col: Int
     let neighbors: Int
