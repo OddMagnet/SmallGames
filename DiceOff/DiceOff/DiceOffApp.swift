@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct DiceOffApp: App {
+    @StateObject var settings = Settings()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(settings)
         }
     }
 }

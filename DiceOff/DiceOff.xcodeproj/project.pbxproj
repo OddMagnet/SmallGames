@@ -16,6 +16,8 @@
 		4C3E861A278ADC670037925B /* Dice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E8619278ADC670037925B /* Dice.swift */; };
 		4C3E861C278ADDAC0037925B /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E861B278ADDAB0037925B /* Game.swift */; };
 		4C3E861F278AE0880037925B /* DiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3E861E278AE0880037925B /* DiceView.swift */; };
+		4CDD19ED2795992500094B03 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD19EC2795992500094B03 /* SettingsView.swift */; };
+		4CDD19EF27959A1500094B03 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD19EE27959A1500094B03 /* Settings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +31,8 @@
 		4C3E8619278ADC670037925B /* Dice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dice.swift; sourceTree = "<group>"; };
 		4C3E861B278ADDAB0037925B /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
 		4C3E861E278AE0880037925B /* DiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceView.swift; sourceTree = "<group>"; };
+		4CDD19EC2795992500094B03 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		4CDD19EE27959A1500094B03 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +90,7 @@
 				4C3E8617278ADBDE0037925B /* Player.swift */,
 				4C3E8619278ADC670037925B /* Dice.swift */,
 				4C3E861B278ADDAB0037925B /* Game.swift */,
+				4CDD19EE27959A1500094B03 /* Settings.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -94,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				4C3E861E278AE0880037925B /* DiceView.swift */,
+				4CDD19EC2795992500094B03 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -168,7 +174,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CDD19EF27959A1500094B03 /* Settings.swift in Sources */,
 				4C3E8618278ADBDE0037925B /* Player.swift in Sources */,
+				4CDD19ED2795992500094B03 /* SettingsView.swift in Sources */,
 				4C3E861C278ADDAC0037925B /* Game.swift in Sources */,
 				4C3E8616278ADBAB0037925B /* GameState.swift in Sources */,
 				4C3E861A278ADC670037925B /* Dice.swift in Sources */,
@@ -323,7 +331,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -353,7 +361,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
