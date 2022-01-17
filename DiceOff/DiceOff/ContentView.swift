@@ -8,35 +8,57 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var game = Game(rows: 8, columns: 11)
+    @EnvironmentObject var settings: Settings
+    @StateObject private var game = Game(rows: 3, columns: 5, players: Player.defaultPlayers)
+    @State private var showSettings = false
 
     var body: some View {
-        VStack(spacing: 5) {
-            Text("Dice Off")
-                .font(.largeTitle.bold())
+        NavigationView {
+            VStack(spacing: 5) {
+                HStack(spacing: 20) {
+                    ForEach(game.players) { player in
+                        Text("\(player.name): \(player.score)")
+                            .foregroundColor(player.color)
+                            .font(game.activePlayer == player ? .title.bold() : .title)
+                    }
+                }
 
-            HStack(spacing: 20) {
-                Text("Green: \(game.greenScore)")
-                    .foregroundColor(.green)
-                    .font(game.activePlayer == .green ? .title.bold() : .title)
-
-                Text("Red: \(game.redScore)")
-                    .foregroundColor(.red)
-                    .font(game.activePlayer == .red ? .title.bold() : .title)
+                ForEach(game.board.indices, id: \.self) { row in    // go over every row
+                    HStack(spacing: 5) {                            // create an HStack for the row
+                        ForEach(game.board[row]) { dice in          // go over every dice in the row
+                            DiceView(dice: dice)                    // create a DiceView for the dice
+                                .onTapGesture {
+                                    game.increment(dice)
+                                }
+                        }
+                    }
+                }
             }
-
-            ForEach(game.board.indices, id: \.self) { row in    // go over every row
-                HStack(spacing: 5) {                            // create an HStack for the row
-                    ForEach(game.board[row]) { dice in          // go over every dice in the row
-                        DiceView(dice: dice)                    // create a DiceView for the dice
-                            .onTapGesture {
-                                game.increment(dice)
-                            }
+            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Dice Off")
+                        .font(.largeTitle.bold())
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gear")
+//                        Text("Settings")
                     }
                 }
             }
         }
-        .padding()
+        .navigationViewStyle(.stack)
+        .sheet(isPresented: $showSettings, onDismiss: updateGame) {
+            SettingsView()
+        }
+    }
+
+    func updateGame() {
+
     }
 }
 

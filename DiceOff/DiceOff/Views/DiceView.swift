@@ -18,7 +18,7 @@ struct DiceView: View {
 
     var body: some View {
         diceImage
-            .foregroundColor(dice.owner.color)
+            .foregroundColor(dice.owner?.color ?? Color(white: 0.6))
             .overlay(
                 diceImage
                     .foregroundColor(.white)
