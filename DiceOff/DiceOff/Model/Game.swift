@@ -155,7 +155,9 @@ class Game: ObservableObject {
         // check if the game is over
         if activePlayer.score == gameOverScore {
             gameOver = true
-            print("GAME OVER")
+            // TODO: should this stay?
+            // Letting this commented makes for a nice effect when the game is over
+//            return
         }
 
         // make a copy of the changeList, then empty it
