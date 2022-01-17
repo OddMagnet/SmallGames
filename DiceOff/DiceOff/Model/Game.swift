@@ -10,12 +10,12 @@ import SwiftUI
 class Game: ObservableObject {
     var board: [[Dice]]
     var changeList = [Dice]()   // contains dice that are waiting to change
-    var gameOver = false        // used to ensure
-    var gameOverScore: Int
 
     private let numRows: Int
     private let numCols: Int
+    var gameOverScore: Int
 
+    @Published var gameOver = false
     @Published var players: [Player]
     @Published var activePlayer: Player
     @Published var state: GameState = .waiting
@@ -32,8 +32,10 @@ class Game: ObservableObject {
         // Create an empty board
         self.board = [[Dice]]()
 
-        // ensure the `players` array is not empty
-        guard let firstPlayer = players.shuffled().first else { fatalError("The Game can't be initialised with an empty Players array") }
+        // set the first player (who is not AI)
+        guard let firstPlayer = players.shuffled().first(where: {
+            $0.isAI == false
+        }) else { fatalError("The Game can't be initialised with an empty Players array") }
 
         // set the active player
         activePlayer = firstPlayer
@@ -122,12 +124,6 @@ class Game: ObservableObject {
         state = .changing
         changeList.append(dice)
         runChanges()
-
-//        if gameOver {
-//            updateScores()
-//        }
-        // TODO: is this change needed?
-        //        state = .waiting
     }
 
     private func runChanges() {
