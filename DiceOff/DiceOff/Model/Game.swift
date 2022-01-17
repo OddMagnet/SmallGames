@@ -8,12 +8,12 @@
 import SwiftUI
 
 class Game: ObservableObject {
-    var board: [[Dice]]
+    var board = [[Dice]]()
     var changeList = [Dice]()   // contains dice that are waiting to change
 
-    private let numRows: Int
-    private let numCols: Int
-    var gameOverScore: Int
+    private var numRows: Int
+    private var numCols: Int
+    var gameOverScore: Int { numRows * numCols }
 
     @Published var gameOver = false
     @Published var players: [Player]
@@ -25,20 +25,36 @@ class Game: ObservableObject {
     init(rows: Int, columns: Int, players: [Player]) {
         numRows = rows
         numCols = columns
-        gameOverScore = numRows * numCols
-
         self.players = players
-
-        // Create an empty board
-        self.board = [[Dice]]()
 
         // set the first player (who is not AI)
         guard let firstPlayer = players.shuffled().first(where: {
             $0.isAI == false
         }) else { fatalError("The Game can't be initialised with an empty Players array") }
-
         // set the active player
         activePlayer = firstPlayer
+
+        setup()
+    }
+
+    func reset(rows: Int, columns: Int, players: [Player]) {
+        numRows = rows
+        numCols = columns
+        self.players = players
+
+        // set the first player (who is not AI)
+        guard let firstPlayer = players.shuffled().first(where: {
+            $0.isAI == false
+        }) else { fatalError("The Game can't be initialised with an empty Players array") }
+        // set the active player
+        activePlayer = firstPlayer
+
+        setup()
+    }
+
+    func setup() {
+        // Create an empty board
+        self.board = [[Dice]]()
 
         // for every row of the board
         for currentRow in 0 ..< numRows {
